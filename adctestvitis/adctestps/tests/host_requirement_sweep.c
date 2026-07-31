@@ -223,6 +223,92 @@ static int run_rejected_case(const TestCase *test,
     return passed ? 0 : 1;
 }
 
+static int run_boundary_tolerance_case(const TestCase *test,
+                                       const Calibration *calibration,
+                                       float nominal_fundamental_hz)
+{
+    MeasurementResult result;
+    float expected_vpp_v = reference_peak_to_peak(test);
+    uint32_t tone;
+    int analyze_status;
+    int failures = 0;
+
+    generate_samples(test, calibration);
+    analyze_status = signal_analyze(Samples, calibration, &result);
+
+    printf("\nCASE %s\n", test->name);
+    printf("  status=%d flags=0x%08x components=%u"
+           " measured_f0=%.3f Hz reported_f0=%.3f Hz\n",
+           analyze_status,
+           result.flags,
+           result.component_count,
+           test->fundamental_hz,
+           result.fundamental_hz);
+    printf("  Vpp=%.6f V expected=%.6f V"
+           " RMSac=%.6f V expected=%.6f V\n",
+           result.peak_to_peak_volts,
+           expected_vpp_v,
+           result.rms_ac_volts,
+           test->expected_rms_ac_v);
+
+    failures += analyze_status != 0;
+    failures += result.flags != 0U;
+    failures += result.component_count != test->tone_count;
+    failures += !within(result.fundamental_hz,
+                        nominal_fundamental_hz,
+                        5.0f);
+    failures += !within(result.peak_to_peak_volts,
+                        expected_vpp_v,
+                        0.005f);
+    failures += !within(result.rms_ac_volts,
+                        test->expected_rms_ac_v,
+                        0.005f);
+
+    for (tone = 0U; tone < test->tone_count; tone++) {
+        const SignalComponent *found = NULL;
+        float expected_reported_frequency =
+            nominal_fundamental_hz *
+            (float)test->tones[tone].harmonic;
+        uint32_t component;
+
+        for (component = 0U;
+             component < result.component_count;
+             component++) {
+            if (result.components[component].harmonic ==
+                test->tones[tone].harmonic) {
+                found = &result.components[component];
+                break;
+            }
+        }
+
+        if (found == NULL) {
+            printf("  H%u    missing\n", test->tones[tone].harmonic);
+            failures++;
+            continue;
+        }
+
+        printf("  H%u    reported_f=%.3f Hz expected_f=%.3f Hz"
+               " amplitude=%.6f V expected=%.6f V\n",
+               test->tones[tone].harmonic,
+               found->frequency_hz,
+               expected_reported_frequency,
+               found->amplitude_peak_v,
+               test->tones[tone].peak_v);
+        failures += !within(found->frequency_hz,
+                            expected_reported_frequency,
+                            5.0f);
+        failures += !within(found->amplitude_peak_v,
+                            test->tones[tone].peak_v,
+                            AMPLITUDE_ERROR_LIMIT_V);
+        failures += phase_error(found->phase_rad,
+                                test->tones[tone].phase_rad) >
+                    PHASE_ERROR_LIMIT_RAD;
+    }
+
+    printf("  RESULT %s\n", failures == 0 ? "PASS" : "FAIL");
+    return failures == 0 ? 0 : 1;
+}
+
 static int run_component_limit_case(const Calibration *calibration)
 {
     static const TestCase test = {
@@ -744,10 +830,66 @@ int main(void)
              {5U, 0.0125f, 0.0f}}
         }
     };
+    static const TestCase boundary_tolerance_cases[] = {
+        {
+            "lower tolerance: measured 9.0 kHz maps to nominal 10 kHz",
+            9000.0f,
+            0.0f,
+            0.200f,
+            0.0728869f,
+            2U,
+            {{1U, 0.100f, 0.4f}, {2U, 0.025f, -0.8f}}
+        },
+        {
+            "upper tolerance: measured 251 kHz keeps nominal 500 kHz H2",
+            251000.0f,
+            0.0f,
+            0.200f,
+            0.0728869f,
+            2U,
+            {{1U, 0.100f, -0.8f}, {2U, 0.025f, 0.6f}}
+        },
+        {
+            "lower inside tolerance: 9.76 kHz reports nominal 10 kHz",
+            9760.0f,
+            0.0f,
+            0.200f,
+            0.0728869f,
+            2U,
+            {{1U, 0.100f, 0.2f}, {2U, 0.025f, -1.0f}}
+        },
+        {
+            "upper inside tolerance: 250.24 kHz reports nominal 250 kHz",
+            250240.0f,
+            0.0f,
+            0.200f,
+            0.0728869f,
+            2U,
+            {{1U, 0.100f, -0.3f}, {2U, 0.025f, 0.9f}}
+        },
+        {
+            "lower exact tolerance: 8.995 kHz is accepted",
+            8995.0f,
+            0.0f,
+            0.200f,
+            0.0728869f,
+            2U,
+            {{1U, 0.100f, 0.7f}, {2U, 0.025f, -0.5f}}
+        },
+        {
+            "upper exact tolerance: 251.005 kHz keeps nominal 500 kHz H2",
+            251005.0f,
+            0.0f,
+            0.200f,
+            0.0728869f,
+            2U,
+            {{1U, 0.100f, -0.6f}, {2U, 0.025f, 0.4f}}
+        }
+    };
     static const TestCase rejected_cases[] = {
         {
-            "below analysis range: 9.9 kHz must not clamp to 10 kHz",
-            9900.0f,
+            "below lower tolerance: 8.994 kHz must be rejected",
+            8994.0f,
             0.0f,
             0.200f,
             0.0707107f,
@@ -755,8 +897,8 @@ int main(void)
             {{1U, 0.100f, 0.4f}}
         },
         {
-            "above fundamental range: 250.5 kHz cannot contain a harmonic",
-            250500.0f,
+            "above upper tolerance: 251.006 kHz must be rejected",
+            251006.0f,
             0.0f,
             0.200f,
             0.0707107f,
@@ -773,6 +915,16 @@ int main(void)
 
     for (i = 0U; i < sizeof(cases) / sizeof(cases[0]); i++) {
         failed_cases += run_case(&cases[i], &calibration);
+    }
+    for (i = 0U;
+         i < sizeof(boundary_tolerance_cases) /
+             sizeof(boundary_tolerance_cases[0]);
+         i++) {
+        failed_cases += run_boundary_tolerance_case(
+            &boundary_tolerance_cases[i],
+            &calibration,
+            (i & 1U) == 0U ?
+                APP_ANALYSIS_MIN_HZ : APP_FUNDAMENTAL_MAX_HZ);
     }
     for (i = 0U;
          i < sizeof(rejected_cases) / sizeof(rejected_cases[0]);

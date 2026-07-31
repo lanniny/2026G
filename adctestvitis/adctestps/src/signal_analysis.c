@@ -212,9 +212,15 @@ static uint32_t find_spectral_peaks(PeakCandidate *peaks,
                                     float *median_noise_power)
 {
     uint32_t minimum_bin =
-        (uint32_t)ceilf(APP_ANALYSIS_MIN_HZ / APP_FFT_BIN_HZ);
+        (uint32_t)ceilf(
+            (APP_ANALYSIS_MIN_HZ -
+             APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ) /
+            APP_FFT_BIN_HZ);
     uint32_t maximum_bin =
-        (uint32_t)floorf(APP_ANALYSIS_MAX_HZ / APP_FFT_BIN_HZ);
+        (uint32_t)floorf(
+            (APP_ANALYSIS_MAX_HZ +
+             APP_ANALYSIS_SEARCH_MARGIN_HZ) /
+            APP_FFT_BIN_HZ);
     uint32_t maximum_power_bin = minimum_bin;
     uint32_t noise_count = 0U;
     uint32_t peak_count = 0U;
@@ -222,9 +228,10 @@ static uint32_t find_spectral_peaks(PeakCandidate *peaks,
     float threshold;
 
     /*
-     * Keep one guard bin outside each analysis boundary.  A tone exactly at
-     * 10 kHz lies at bin 20.48, so starting at ceil(20.48) would discard the
-     * stronger bin 20 and force the sub-bin interpolation against its clamp.
+     * Search the measurement-tolerance margin and keep one additional guard
+     * bin.  This prevents a legal 10/250 kHz boundary tone from disappearing
+     * solely because its measured frequency is within the allowed 1 kHz
+     * result error.
      */
     if (minimum_bin > 1U) {
         minimum_bin--;
@@ -406,13 +413,73 @@ static float choose_continuous_fundamental(const PeakCandidate *peaks,
     return selected_frequency;
 }
 
+static int associate_grid_candidate(float measured_frequency,
+                                    float *nominal_frequency)
+{
+    float grid_frequency =
+        floorf(measured_frequency / APP_FUNDAMENTAL_GRID_HZ +
+               0.5f) * APP_FUNDAMENTAL_GRID_HZ;
+
+    /* Exact legal grid candidates take priority over an adjacent boundary. */
+    if (grid_frequency >= APP_ANALYSIS_MIN_HZ &&
+        grid_frequency <= APP_FUNDAMENTAL_MAX_HZ &&
+        fabsf(measured_frequency - grid_frequency) <=
+            GRID_CANDIDATE_TOLERANCE_HZ) {
+        *nominal_frequency = grid_frequency;
+        return 0;
+    }
+
+    if (fabsf(measured_frequency - APP_ANALYSIS_MIN_HZ) <=
+            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ) {
+        *nominal_frequency = APP_ANALYSIS_MIN_HZ;
+        return 0;
+    }
+    if (fabsf(measured_frequency - APP_FUNDAMENTAL_MAX_HZ) <=
+            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ) {
+        *nominal_frequency = APP_FUNDAMENTAL_MAX_HZ;
+        return 0;
+    }
+
+    return -1;
+}
+
+static int derive_legal_nominal_frequency(float measured_frequency,
+                                          float *nominal_frequency)
+{
+    float grid_frequency;
+
+    if (measured_frequency <
+            APP_ANALYSIS_MIN_HZ -
+            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ ||
+        measured_frequency >
+            APP_FUNDAMENTAL_MAX_HZ +
+            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ) {
+        return -1;
+    }
+
+    grid_frequency =
+        floorf(measured_frequency / APP_FUNDAMENTAL_GRID_HZ +
+               0.5f) * APP_FUNDAMENTAL_GRID_HZ;
+    if (grid_frequency < APP_ANALYSIS_MIN_HZ) {
+        grid_frequency = APP_ANALYSIS_MIN_HZ;
+    }
+    if (grid_frequency > APP_FUNDAMENTAL_MAX_HZ) {
+        grid_frequency = APP_FUNDAMENTAL_MAX_HZ;
+    }
+
+    *nominal_frequency = grid_frequency;
+    return 0;
+}
+
 static int choose_grid_fundamental(const PeakCandidate *peaks,
                                    uint32_t peak_count,
-                                   float *selected_frequency)
+                                   float *selected_frequency,
+                                   float *selected_nominal_frequency)
 {
     uint32_t best_match_count = 0U;
     float best_matched_power = 0.0f;
     float best_frequency = 0.0f;
+    float best_nominal_frequency = 0.0f;
     uint32_t candidate_index;
 
     for (candidate_index = 0U;
@@ -420,19 +487,15 @@ static int choose_grid_fundamental(const PeakCandidate *peaks,
          candidate_index++) {
         float candidate_frequency =
             peaks[candidate_index].refined_bin * APP_FFT_BIN_HZ;
-        float grid_frequency =
-            floorf(candidate_frequency / APP_FUNDAMENTAL_GRID_HZ +
-                   0.5f) * APP_FUNDAMENTAL_GRID_HZ;
+        float grid_frequency;
         float matched_power = 0.0f;
         float weighted_frequency = 0.0f;
         float weight_sum = 0.0f;
         uint32_t matched_count = 0U;
         uint32_t peak_index;
 
-        if (grid_frequency < APP_ANALYSIS_MIN_HZ ||
-            grid_frequency > APP_FUNDAMENTAL_MAX_HZ ||
-            fabsf(candidate_frequency - grid_frequency) >
-                GRID_CANDIDATE_TOLERANCE_HZ ||
+        if (associate_grid_candidate(candidate_frequency,
+                                     &grid_frequency) != 0 ||
             peak_amplitude_estimate(&peaks[candidate_index]) <
                 APP_FUNDAMENTAL_CANDIDATE_MIN_PEAK_V) {
             continue;
@@ -448,11 +511,18 @@ static int choose_grid_fundamental(const PeakCandidate *peaks,
                 (uint32_t)floorf(ratio + 0.5f);
             float expected_frequency =
                 candidate_frequency * (float)harmonic;
+            float nominal_harmonic_frequency =
+                grid_frequency * (float)harmonic;
 
             if (harmonic >= 1U &&
                 harmonic <= APP_MAX_COMPONENTS &&
-                expected_frequency <= APP_ANALYSIS_MAX_HZ +
-                                      GRID_HARMONIC_TOLERANCE_HZ &&
+                nominal_harmonic_frequency <=
+                    APP_ANALYSIS_MAX_HZ +
+                    0.5f * APP_FFT_BIN_HZ &&
+                expected_frequency <=
+                    APP_ANALYSIS_MAX_HZ +
+                    APP_ANALYSIS_SEARCH_MARGIN_HZ +
+                    GRID_HARMONIC_TOLERANCE_HZ &&
                 fabsf(peak_frequency - expected_frequency) <=
                     GRID_HARMONIC_TOLERANCE_HZ &&
                 peak_amplitude_estimate(&peaks[peak_index]) >=
@@ -476,6 +546,7 @@ static int choose_grid_fundamental(const PeakCandidate *peaks,
             best_match_count = matched_count;
             best_matched_power = matched_power;
             best_frequency = weighted_frequency / weight_sum;
+            best_nominal_frequency = grid_frequency;
         }
     }
 
@@ -484,21 +555,27 @@ static int choose_grid_fundamental(const PeakCandidate *peaks,
     }
 
     *selected_frequency = best_frequency;
+    *selected_nominal_frequency = best_nominal_frequency;
     return 0;
 }
 
 static float choose_fundamental(const PeakCandidate *peaks,
                                 uint32_t peak_count,
-                                float maximum_power)
+                                float maximum_power,
+                                float *nominal_frequency,
+                                uint32_t *uses_nominal_grid)
 {
     float selected_frequency;
 
     if (choose_grid_fundamental(peaks,
                                 peak_count,
-                                &selected_frequency) == 0) {
+                                &selected_frequency,
+                                nominal_frequency) == 0) {
+        *uses_nominal_grid = 1U;
         return selected_frequency;
     }
 
+    *uses_nominal_grid = 0U;
     return choose_continuous_fundamental(peaks,
                                          peak_count,
                                          maximum_power);
@@ -816,12 +893,15 @@ int signal_analyze(const uint16_t *adc_codes,
     float fundamental_peak;
     float fundamental_amplitude;
     float fundamental_phase;
+    float fit_fundamental_hz;
+    float nominal_fundamental_hz;
     float component_limit;
     float sum;
     float sum_square;
     float minimum_voltage;
     float maximum_voltage;
     uint32_t peak_count;
+    uint32_t uses_nominal_grid;
     uint32_t i;
 
     if (adc_codes == NULL ||
@@ -903,25 +983,33 @@ int signal_analyze(const uint16_t *adc_codes,
         return 0;
     }
 
-    result->fundamental_hz = refine_fundamental_frequency(
-        choose_fundamental(peaks, peak_count, maximum_power));
+    fit_fundamental_hz = refine_fundamental_frequency(
+        choose_fundamental(peaks,
+                           peak_count,
+                           maximum_power,
+                           &nominal_fundamental_hz,
+                           &uses_nominal_grid));
 
-    if (result->fundamental_hz <
-            APP_ANALYSIS_MIN_HZ -
-            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ ||
-        result->fundamental_hz >
-            APP_FUNDAMENTAL_MAX_HZ +
-            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ) {
+    if (derive_legal_nominal_frequency(fit_fundamental_hz,
+                                       &nominal_fundamental_hz) != 0) {
         result->flags |= MEASUREMENT_FLAG_ANALYSIS_ERROR;
         return -1;
     }
+    if (uses_nominal_grid == 0U &&
+        associate_grid_candidate(fit_fundamental_hz,
+                                 &nominal_fundamental_hz) == 0) {
+        uses_nominal_grid = 1U;
+    }
+    result->fundamental_hz =
+        uses_nominal_grid != 0U ?
+            nominal_fundamental_hz : fit_fundamental_hz;
 
     /*
      * First fit the fundamental so the relative component threshold is
      * based on its calibrated input amplitude.
      */
     {
-        if (fit_tone(result->fundamental_hz,
+        if (fit_tone(fit_fundamental_hz,
                      &fundamental_amplitude,
                      &fundamental_phase,
                      NULL) != 0) {
@@ -932,7 +1020,7 @@ int signal_analyze(const uint16_t *adc_codes,
         fundamental_amplitude *=
             calibration_amplitude_correction(
                 calibration,
-                result->fundamental_hz);
+                fit_fundamental_hz);
         component_limit =
             maximum_float(APP_COMPONENT_MIN_PEAK_V,
                           fundamental_amplitude *
@@ -941,13 +1029,17 @@ int signal_analyze(const uint16_t *adc_codes,
 
     result->rms_ac_volts = 0.0f;
     for (i = 1U; i <= APP_MAX_COMPONENTS; i++) {
-        float frequency =
-            result->fundamental_hz * (float)i;
+        float frequency = fit_fundamental_hz * (float)i;
+        float nominal_frequency =
+            nominal_fundamental_hz * (float)i;
+        float reported_frequency =
+            uses_nominal_grid != 0U ?
+                nominal_frequency : frequency;
         float amplitude;
         float phase;
 
-        if (frequency > APP_ANALYSIS_MAX_HZ +
-                        0.5f * APP_FFT_BIN_HZ) {
+        if (nominal_frequency > APP_ANALYSIS_MAX_HZ +
+                                0.5f * APP_FFT_BIN_HZ) {
             break;
         }
 
@@ -974,7 +1066,7 @@ int signal_analyze(const uint16_t *adc_codes,
                 &result->components[result->component_count];
 
             component->harmonic = i;
-            component->frequency_hz = frequency;
+            component->frequency_hz = reported_frequency;
             component->amplitude_peak_v = amplitude;
             component->phase_rad = phase;
             result->component_count++;
