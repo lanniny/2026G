@@ -1,0 +1,120 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Wed Jul 29 14:08:47 2026
+| Host         : LAPTOP-13V14I0B running 64-bit major release  (build 9200)
+| Command      : report_methodology -file D:/vivado/zynq/ttt/adc_easy_test/timing_4msps/methodology.rpt
+| Design       : design_1_wrapper
+| Device       : xc7z020clg484-1
+| Speed File   : -1
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Report Methodology
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: impl_1
+      Design limits: <entire design considered>
+             Max checks: <unlimited>
+             Checks found: 16
++-----------+----------+---------------------------------------------+--------+
+| Rule      | Severity | Description                                 | Checks |
++-----------+----------+---------------------------------------------+--------+
+| LUTAR-1   | Warning  | LUT drives async reset alert                | 1      |
+| TIMING-16 | Warning  | Large setup violation                       | 13     |
+| XDCB-5    | Warning  | Runtime inefficient way to find pin objects | 2      |
++-----------+----------+---------------------------------------------+--------+
+
+2. REPORT DETAILS
+-----------------
+LUTAR-1#1 Warning
+LUT drives async reset alert  
+LUT cell design_1_i/ad9226test_0/inst/sys_reset_sync[1]_i_1, with 2 or more inputs, drives asynchronous preset/clear pin(s) design_1_i/ad9226test_0/inst/sys_reset_sync_reg[0]/CLR
+design_1_i/ad9226test_0/inst/sys_reset_sync_reg[1]/CLR. The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
+Related violations: <none>
+
+TIMING-16#1 Warning
+Large setup violation  
+There is a large setup violation of -1.132 ns between ADC_DATA_IN_PIN1_0[0] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[0]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#2 Warning
+Large setup violation  
+There is a large setup violation of -1.133 ns between ADC_DATA_IN_PIN1_0[2] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[2]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#3 Warning
+Large setup violation  
+There is a large setup violation of -1.139 ns between ADC_DATA_IN_PIN1_0[1] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[1]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#4 Warning
+Large setup violation  
+There is a large setup violation of -1.139 ns between ADC_DATA_IN_PIN1_0[3] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[3]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#5 Warning
+Large setup violation  
+There is a large setup violation of -1.140 ns between ADC_DATA_IN_PIN1_0[4] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[4]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#6 Warning
+Large setup violation  
+There is a large setup violation of -1.148 ns between ADC_DATA_IN_PIN1_0[10] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[10]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#7 Warning
+Large setup violation  
+There is a large setup violation of -1.153 ns between ADC_DATA_IN_PIN1_0[5] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[5]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#8 Warning
+Large setup violation  
+There is a large setup violation of -1.154 ns between ADC_DATA_IN_PIN1_0[7] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[7]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#9 Warning
+Large setup violation  
+There is a large setup violation of -1.158 ns between ADC_DATA_IN_PIN1_0[9] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[9]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#10 Warning
+Large setup violation  
+There is a large setup violation of -1.163 ns between ADC_DATA_IN_PIN1_0[6] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[6]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#11 Warning
+Large setup violation  
+There is a large setup violation of -1.165 ns between ADC_DATA_IN_PIN1_0[8] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[8]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#12 Warning
+Large setup violation  
+There is a large setup violation of -1.166 ns between ADC_DATA_IN_PIN1_0[11] (clocked by adc_a_fwd_clk) and design_1_i/ad9226test_0/inst/adc1_input_reg_reg[11]/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#13 Warning
+Large setup violation  
+There is a large setup violation of -2.343 ns between design_1_i/axi_gpio_ad9226_ctrl/U0/gpio_core_1/Dual.gpio_Data_Out_reg[0]/C (clocked by clk_fpga_0) and design_1_i/ad9226test_0/inst/start_meta_reg/D (clocked by clk_out3_ad9248clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+XDCB-5#1 Warning
+Runtime inefficient way to find pin objects  
+The option '-source : [get_pins -hierarchical -filter {NAME =~ */adc1_clk_fwd_oddr/C}]' of constraint 'create_generated_clock' uses inefficient query to find pin objects (see constraint position '3' in the Timing Constraint window in Vivado IDE). To reduce runtime, it is recommended to get the pins through the cell objects. Please refer to Using Constraints Guide (Constraints Efficiency). An example of optimal query is: get_pins -filter {REF_PIN_NAME=~yy*} -of_objects [get_cells -hierarchical xx*].
+Current XDC: D:/vivado/zynq/ttt/adc_easy_test/adc_easy_test.srcs/constrs_1/new/ad9226x.xdc (Line: 120)
+Related violations: <none>
+
+XDCB-5#2 Warning
+Runtime inefficient way to find pin objects  
+The option '-source : [get_pins -hierarchical -filter {NAME =~ */adc2_clk_fwd_oddr/C}]' of constraint 'create_generated_clock' uses inefficient query to find pin objects (see constraint position '4' in the Timing Constraint window in Vivado IDE). To reduce runtime, it is recommended to get the pins through the cell objects. Please refer to Using Constraints Guide (Constraints Efficiency). An example of optimal query is: get_pins -filter {REF_PIN_NAME=~yy*} -of_objects [get_cells -hierarchical xx*].
+Current XDC: D:/vivado/zynq/ttt/adc_easy_test/adc_easy_test.srcs/constrs_1/new/ad9226x.xdc (Line: 124)
+Related violations: <none>
+
+

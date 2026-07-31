@@ -1,0 +1,55 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.17185",
+   "Default View_TopLeft":"-4,-544",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port UART_1_0 -pg 1 -lvl 5 -x 1980 -y -550 -defaultsOSRD
+preplace port FIXED_IO_0 -pg 1 -lvl 5 -x 1980 -y -510 -defaultsOSRD
+preplace port DDR_0 -pg 1 -lvl 5 -x 1980 -y -530 -defaultsOSRD
+preplace port HMI_UART_0 -pg 1 -lvl 5 -x 1980 -y -340 -defaultsOSRD
+preplace port port-id_ADC_CLK_COMMON_OUT1_0 -pg 1 -lvl 5 -x 1980 -y -150 -defaultsOSRD
+preplace port port-id_ADC_CLK_COMMON_OUT2_0 -pg 1 -lvl 5 -x 1980 -y -130 -defaultsOSRD
+preplace portBus ADC_DATA_IN_PIN1_0 -pg 1 -lvl 0 -x -50 -y -110 -defaultsOSRD
+preplace portBus ADC_DATA_IN_PIN2_0 -pg 1 -lvl 0 -x -50 -y -90 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 1 -x 250 -y -270 -defaultsOSRD
+preplace inst axi_dma_0 -pg 1 -lvl 1 -x 250 -y -560 -defaultsOSRD
+preplace inst axi_smc -pg 1 -lvl 3 -x 1310 -y -430 -defaultsOSRD
+preplace inst rst_ps7_0_50M -pg 1 -lvl 2 -x 840 -y -630 -defaultsOSRD
+preplace inst rst_s2mm_data -pg 1 -lvl 3 -x 1310 -y -240 -defaultsOSRD
+preplace inst axi_s2mm_smc -pg 1 -lvl 4 -x 1720 -y -660 -defaultsOSRD
+preplace inst ad9226test_0 -pg 1 -lvl 2 -x 840 -y -130 -defaultsOSRD
+preplace inst axi_gpio_ad9226_ctrl -pg 1 -lvl 4 -x 1720 -y -440 -defaultsOSRD
+preplace inst axis_clock_converter_ad9226 -pg 1 -lvl 4 -x 1720 -y -230 -defaultsOSRD
+preplace netloc ADC_DATA_IN_PIN1_0_1 1 0 2 NJ -110 NJ
+preplace netloc ADC_DATA_IN_PIN2_0_1 1 0 2 NJ -90 NJ
+preplace netloc ad9226test_0_ADC_CLK_COMMON_OUT1 1 2 3 1090J -130 NJ -130 1880J
+preplace netloc ad9226test_0_ADC_CLK_COMMON_OUT2 1 2 3 1060J -120 NJ -120 1900J
+preplace netloc ad9226test_0_m_axis_aclk 1 2 2 1140 -110 1580
+preplace netloc ad9226test_0_ps_status 1 2 3 NJ -90 NJ -90 1870
+preplace netloc axi_dma_0_s2mm_introut 1 0 2 0 -430 480
+preplace netloc axi_gpio_ad9226_ctrl_gpio_io_o 1 1 4 620 -480 1070J -580 1480J -560 1870
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 4 -10 -420 580 -430 1140 -520 1530
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 1 2 570 -260 N
+preplace netloc rst_ps7_0_50M_peripheral_aresetn 1 0 4 20 -390 540J -390 1080 -590 1550
+preplace netloc rst_s2mm_data_peripheral_aresetn 1 3 1 1570 -250n
+preplace netloc ad9226test_0_m_axis1 1 2 2 1120J -140 1560
+preplace netloc axi_dma_0_M_AXI_S2MM1 1 1 3 490J -530 1060J -600 1480
+preplace netloc axi_s2mm_smc_M00_AXI 1 0 5 10 -450 560J -470 1120J -570 1490J -580 1870
+preplace netloc axi_smc_M00_AXI 1 0 4 10 -460 490J -510 NJ -510 1480
+preplace netloc axi_smc_M01_AXI1 1 3 1 1540 -460n
+preplace netloc axis_clock_converter_ad9226_M_AXIS1 1 0 5 0 -440 NJ -440 1130J -530 NJ -530 1860
+preplace netloc processing_system7_0_DDR 1 1 4 500 -520 1110J -540 NJ -540 1880J
+preplace netloc processing_system7_0_FIXED_IO 1 1 4 550 -500 1100J -550 NJ -550 1890J
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 2 600J -450 N
+preplace netloc processing_system7_0_UART_0 1 1 4 590 -490 1090J -560 1500J -570 1900
+preplace netloc processing_system7_0_UART_1 1 1 4 610J -340 NJ -340 NJ -340 NJ
+levelinfo -pg 1 -50 250 840 1310 1720 1980
+pagesize -pg 1 -db -bbox -sgen -290 -1010 2240 200
+"
+}
+{
+   "da_axi4_cnt":"3",
+   "da_clkrst_cnt":"2"
+}

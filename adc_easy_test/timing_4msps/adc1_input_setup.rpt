@@ -1,0 +1,821 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Wed Jul 29 14:08:45 2026
+| Host         : LAPTOP-13V14I0B running 64-bit major release  (build 9200)
+| Command      : report_timing -delay_type max -max_paths 20 -nworst 1 -from [get_ports {ADC_DATA_IN_PIN1_0[*]}] -file D:/vivado/zynq/ttt/adc_easy_test/timing_4msps/adc1_input_setup.rpt
+| Design       : design_1_wrapper
+| Device       : 7z020-clg484
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+| Design State : Routed
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (VIOLATED) :        -1.166ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[11]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[11]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.499ns  (logic 1.499ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.404ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.849ns = ( 15.870 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    Y19                                               0.000    15.194 r  ADC_DATA_IN_PIN1_0[11] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[11]
+    Y19                  IBUF (Prop_ibuf_I_O)         1.499    16.692 r  ADC_DATA_IN_PIN1_0_IBUF[11]_inst/O
+                         net (fo=1, routed)           0.000    16.692    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[11]
+    ILOGIC_X1Y28         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[11]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.667    15.870    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y28         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[11]/C
+                         clock pessimism             -0.059    15.811    
+                         clock uncertainty           -0.273    15.538    
+    ILOGIC_X1Y28         FDRE (Setup_fdre_C_D)       -0.011    15.527    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[11]
+  -------------------------------------------------------------------
+                         required time                         15.527    
+                         arrival time                         -16.692    
+  -------------------------------------------------------------------
+                         slack                                 -1.166    
+
+Slack (VIOLATED) :        -1.165ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[8]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[8]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.504ns  (logic 1.504ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.399ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.854ns = ( 15.875 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    AB21                                              0.000    15.194 r  ADC_DATA_IN_PIN1_0[8] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[8]
+    AB21                 IBUF (Prop_ibuf_I_O)         1.504    16.697 r  ADC_DATA_IN_PIN1_0_IBUF[8]_inst/O
+                         net (fo=1, routed)           0.000    16.697    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[8]
+    ILOGIC_X1Y33         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[8]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.672    15.875    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y33         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[8]/C
+                         clock pessimism             -0.059    15.816    
+                         clock uncertainty           -0.273    15.543    
+    ILOGIC_X1Y33         FDRE (Setup_fdre_C_D)       -0.011    15.532    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[8]
+  -------------------------------------------------------------------
+                         required time                         15.532    
+                         arrival time                         -16.697    
+  -------------------------------------------------------------------
+                         slack                                 -1.165    
+
+Slack (VIOLATED) :        -1.163ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[6]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[6]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.502ns  (logic 1.502ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.398ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.855ns = ( 15.876 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    AB22                                              0.000    15.194 r  ADC_DATA_IN_PIN1_0[6] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[6]
+    AB22                 IBUF (Prop_ibuf_I_O)         1.502    16.696 r  ADC_DATA_IN_PIN1_0_IBUF[6]_inst/O
+                         net (fo=1, routed)           0.000    16.696    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[6]
+    ILOGIC_X1Y35         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[6]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.673    15.876    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y35         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[6]/C
+                         clock pessimism             -0.059    15.817    
+                         clock uncertainty           -0.273    15.544    
+    ILOGIC_X1Y35         FDRE (Setup_fdre_C_D)       -0.011    15.533    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[6]
+  -------------------------------------------------------------------
+                         required time                         15.533    
+                         arrival time                         -16.696    
+  -------------------------------------------------------------------
+                         slack                                 -1.163    
+
+Slack (VIOLATED) :        -1.158ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[9]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[9]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.493ns  (logic 1.493ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.403ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.850ns = ( 15.871 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    AB20                                              0.000    15.194 r  ADC_DATA_IN_PIN1_0[9] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[9]
+    AB20                 IBUF (Prop_ibuf_I_O)         1.493    16.686 r  ADC_DATA_IN_PIN1_0_IBUF[9]_inst/O
+                         net (fo=1, routed)           0.000    16.686    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[9]
+    ILOGIC_X1Y29         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[9]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.668    15.871    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y29         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[9]/C
+                         clock pessimism             -0.059    15.812    
+                         clock uncertainty           -0.273    15.539    
+    ILOGIC_X1Y29         FDRE (Setup_fdre_C_D)       -0.011    15.528    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[9]
+  -------------------------------------------------------------------
+                         required time                         15.528    
+                         arrival time                         -16.686    
+  -------------------------------------------------------------------
+                         slack                                 -1.158    
+
+Slack (VIOLATED) :        -1.154ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[7]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[7]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.492ns  (logic 1.492ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.399ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.854ns = ( 15.875 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    AA21                                              0.000    15.194 r  ADC_DATA_IN_PIN1_0[7] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[7]
+    AA21                 IBUF (Prop_ibuf_I_O)         1.492    16.686 r  ADC_DATA_IN_PIN1_0_IBUF[7]_inst/O
+                         net (fo=1, routed)           0.000    16.686    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[7]
+    ILOGIC_X1Y34         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[7]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.672    15.875    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y34         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[7]/C
+                         clock pessimism             -0.059    15.816    
+                         clock uncertainty           -0.273    15.543    
+    ILOGIC_X1Y34         FDRE (Setup_fdre_C_D)       -0.011    15.532    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[7]
+  -------------------------------------------------------------------
+                         required time                         15.532    
+                         arrival time                         -16.686    
+  -------------------------------------------------------------------
+                         slack                                 -1.154    
+
+Slack (VIOLATED) :        -1.153ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[5]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[5]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.492ns  (logic 1.492ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.398ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.855ns = ( 15.876 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    AA22                                              0.000    15.194 r  ADC_DATA_IN_PIN1_0[5] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[5]
+    AA22                 IBUF (Prop_ibuf_I_O)         1.492    16.686 r  ADC_DATA_IN_PIN1_0_IBUF[5]_inst/O
+                         net (fo=1, routed)           0.000    16.686    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[5]
+    ILOGIC_X1Y36         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[5]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.673    15.876    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y36         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[5]/C
+                         clock pessimism             -0.059    15.817    
+                         clock uncertainty           -0.273    15.544    
+    ILOGIC_X1Y36         FDRE (Setup_fdre_C_D)       -0.011    15.533    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[5]
+  -------------------------------------------------------------------
+                         required time                         15.533    
+                         arrival time                         -16.686    
+  -------------------------------------------------------------------
+                         slack                                 -1.153    
+
+Slack (VIOLATED) :        -1.148ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[10]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[10]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.482ns  (logic 1.482ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.403ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.850ns = ( 15.871 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    AB19                                              0.000    15.194 r  ADC_DATA_IN_PIN1_0[10] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[10]
+    AB19                 IBUF (Prop_ibuf_I_O)         1.482    16.675 r  ADC_DATA_IN_PIN1_0_IBUF[10]_inst/O
+                         net (fo=1, routed)           0.000    16.675    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[10]
+    ILOGIC_X1Y30         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[10]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.668    15.871    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y30         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[10]/C
+                         clock pessimism             -0.059    15.812    
+                         clock uncertainty           -0.273    15.539    
+    ILOGIC_X1Y30         FDRE (Setup_fdre_C_D)       -0.011    15.528    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[10]
+  -------------------------------------------------------------------
+                         required time                         15.528    
+                         arrival time                         -16.676    
+  -------------------------------------------------------------------
+                         slack                                 -1.148    
+
+Slack (VIOLATED) :        -1.140ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[4]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[4]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.477ns  (logic 1.477ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.400ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.853ns = ( 15.874 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    Y21                                               0.000    15.194 r  ADC_DATA_IN_PIN1_0[4] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[4]
+    Y21                  IBUF (Prop_ibuf_I_O)         1.477    16.671 r  ADC_DATA_IN_PIN1_0_IBUF[4]_inst/O
+                         net (fo=1, routed)           0.000    16.671    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[4]
+    ILOGIC_X1Y31         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[4]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.671    15.874    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y31         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[4]/C
+                         clock pessimism             -0.059    15.815    
+                         clock uncertainty           -0.273    15.542    
+    ILOGIC_X1Y31         FDRE (Setup_fdre_C_D)       -0.011    15.531    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[4]
+  -------------------------------------------------------------------
+                         required time                         15.531    
+                         arrival time                         -16.671    
+  -------------------------------------------------------------------
+                         slack                                 -1.140    
+
+Slack (VIOLATED) :        -1.139ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[3]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[3]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.476ns  (logic 1.476ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.400ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.853ns = ( 15.874 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    Y20                                               0.000    15.194 r  ADC_DATA_IN_PIN1_0[3] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[3]
+    Y20                  IBUF (Prop_ibuf_I_O)         1.476    16.670 r  ADC_DATA_IN_PIN1_0_IBUF[3]_inst/O
+                         net (fo=1, routed)           0.000    16.670    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[3]
+    ILOGIC_X1Y32         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[3]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.671    15.874    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y32         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[3]/C
+                         clock pessimism             -0.059    15.815    
+                         clock uncertainty           -0.273    15.542    
+    ILOGIC_X1Y32         FDRE (Setup_fdre_C_D)       -0.011    15.531    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[3]
+  -------------------------------------------------------------------
+                         required time                         15.531    
+                         arrival time                         -16.670    
+  -------------------------------------------------------------------
+                         slack                                 -1.139    
+
+Slack (VIOLATED) :        -1.139ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[1]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[1]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.482ns  (logic 1.482ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.394ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.859ns = ( 15.880 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    V22                                               0.000    15.194 r  ADC_DATA_IN_PIN1_0[1] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[1]
+    V22                  IBUF (Prop_ibuf_I_O)         1.482    16.676 r  ADC_DATA_IN_PIN1_0_IBUF[1]_inst/O
+                         net (fo=1, routed)           0.000    16.676    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[1]
+    ILOGIC_X1Y44         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[1]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.677    15.880    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y44         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[1]/C
+                         clock pessimism             -0.059    15.821    
+                         clock uncertainty           -0.273    15.548    
+    ILOGIC_X1Y44         FDRE (Setup_fdre_C_D)       -0.011    15.537    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[1]
+  -------------------------------------------------------------------
+                         required time                         15.537    
+                         arrival time                         -16.676    
+  -------------------------------------------------------------------
+                         slack                                 -1.139    
+
+Slack (VIOLATED) :        -1.133ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[2]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[2]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.476ns  (logic 1.476ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.394ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.859ns = ( 15.880 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    W22                                               0.000    15.194 r  ADC_DATA_IN_PIN1_0[2] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[2]
+    W22                  IBUF (Prop_ibuf_I_O)         1.476    16.670 r  ADC_DATA_IN_PIN1_0_IBUF[2]_inst/O
+                         net (fo=1, routed)           0.000    16.670    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[2]
+    ILOGIC_X1Y43         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[2]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.677    15.880    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y43         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[2]/C
+                         clock pessimism             -0.059    15.821    
+                         clock uncertainty           -0.273    15.548    
+    ILOGIC_X1Y43         FDRE (Setup_fdre_C_D)       -0.011    15.537    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[2]
+  -------------------------------------------------------------------
+                         required time                         15.537    
+                         arrival time                         -16.670    
+  -------------------------------------------------------------------
+                         slack                                 -1.133    
+
+Slack (VIOLATED) :        -1.132ns  (required time - arrival time)
+  Source:                 ADC_DATA_IN_PIN1_0[0]
+                            (input port clocked by adc_a_fwd_clk  {rise@0.000ns fall@7.812ns period=15.625ns})
+  Destination:            design_1_i/ad9226test_0/inst/adc1_input_reg_reg[0]/D
+                            (rising edge-triggered cell FDRE clocked by clk_out3_ad9248clk  {rise@13.021ns fall@20.833ns period=15.625ns})
+  Path Group:             clk_out3_ad9248clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            13.021ns  (clk_out3_ad9248clk rise@13.021ns - adc_a_fwd_clk rise@0.000ns)
+  Data Path Delay:        1.476ns  (logic 1.476ns (100.000%)  route 0.000ns (0.000%))
+  Logic Levels:           1  (IBUF=1)
+  Input Delay:            8.000ns
+  Clock Path Skew:        -4.393ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    2.860ns = ( 15.881 - 13.021 ) 
+    Source Clock Delay      (SCD):    7.194ns
+    Clock Pessimism Removal (CPR):    -0.059ns
+  Clock Uncertainty:      0.273ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.297ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock adc_a_fwd_clk rise edge)
+                                                      0.000     0.000 r  
+    PS7_X0Y0             PS7                          0.000     0.000 r  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.193     1.193    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.101     1.294 r  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.806     3.100    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.793    -0.693 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.889     1.196    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out1_ad9248clk
+    BUFGCTRL_X0Y1        BUFG (Prop_bufg_I_O)         0.101     1.297 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout1_buf/O
+                         net (fo=1, routed)           1.901     3.198    design_1_i/ad9226test_0/inst/adc1_forward_clk
+    OLOGIC_X1Y46         ODDR (Prop_oddr_C_Q)         0.472     3.670 r  design_1_i/ad9226test_0/inst/adc1_clk_fwd_oddr/Q
+                         net (fo=1, routed)           0.001     3.671    ADC_CLK_COMMON_OUT1_0_OBUF
+    T22                  OBUF (Prop_obuf_I_O)         3.522     7.194 r  ADC_CLK_COMMON_OUT1_0_OBUF_inst/O
+                         net (fo=0)                   0.000     7.194    ADC_CLK_COMMON_OUT1_0
+  -------------------------------------------------------------------    -------------------
+                         input delay                  8.000    15.194    
+    U22                                               0.000    15.194 r  ADC_DATA_IN_PIN1_0[0] (IN)
+                         net (fo=0)                   0.000    15.194    ADC_DATA_IN_PIN1_0[0]
+    U22                  IBUF (Prop_ibuf_I_O)         1.476    16.670 r  ADC_DATA_IN_PIN1_0_IBUF[0]_inst/O
+                         net (fo=1, routed)           0.000    16.670    design_1_i/ad9226test_0/inst/ADC_DATA_IN_PIN1[0]
+    ILOGIC_X1Y45         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[0]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_out3_ad9248clk rise edge)
+                                                     13.021    13.021 f  
+    PS7_X0Y0             PS7                          0.000    13.021 f  design_1_i/processing_system7_0/inst/PS7_i/FCLKCLK[0]
+                         net (fo=1, routed)           1.088    14.109    design_1_i/processing_system7_0/inst/FCLK_CLK_unbuffered[0]
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    14.200 f  design_1_i/processing_system7_0/inst/buffer_fclk_clk_0.FCLK_CLK_0_BUFG/O
+                         net (fo=3183, routed)        1.612    15.812    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_in1
+    MMCME2_ADV_X1Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1B)
+                                                     -3.425    12.387 r  design_1_i/ad9226test_0/inst/ad9248c/inst/mmcm_adv_inst/CLKOUT1B
+                         net (fo=1, routed)           1.725    14.112    design_1_i/ad9226test_0/inst/ad9248c/inst/clk_out3_ad9248clk
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    14.203 r  design_1_i/ad9226test_0/inst/ad9248c/inst/clkout3_buf/O
+                         net (fo=259, routed)         1.678    15.881    design_1_i/ad9226test_0/inst/m_axis_aclk
+    ILOGIC_X1Y45         FDRE                                         r  design_1_i/ad9226test_0/inst/adc1_input_reg_reg[0]/C
+                         clock pessimism             -0.059    15.822    
+                         clock uncertainty           -0.273    15.549    
+    ILOGIC_X1Y45         FDRE (Setup_fdre_C_D)       -0.011    15.538    design_1_i/ad9226test_0/inst/adc1_input_reg_reg[0]
+  -------------------------------------------------------------------
+                         required time                         15.538    
+                         arrival time                         -16.670    
+  -------------------------------------------------------------------
+                         slack                                 -1.132    
+
+
+
+
