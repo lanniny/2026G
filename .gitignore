@@ -38,6 +38,7 @@ adctestvitis/adctestp/resources/
 adctestvitis/adctestp/zynq_fsbl/
 adctestvitis/adctestps/_ide/
 adctestvitis/adctestps/build/
+adctestvitis/adctestps/build_*/
 adctestvitis/adctestps/compile_commands.json
 adctestvitis/adctestps/src/compile_commands.json
 adctestvitis/adctestps/tests/*.exe
@@ -50,3 +51,5 @@ adctestvitis/adctestps/tests/*.exe
 tmp/
 release/v1.0/sd_backups/
 release/v1.0.1/sd_backups/
+release/v1.0.2-rc1/sd_backups/
+release/v1.0.2-rc2/sd_backups/

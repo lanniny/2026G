@@ -8,7 +8,12 @@
 #define TWO_PI_F                (2.0f * PI_F)
 #define FFT_HALF_SIZE           (APP_FRAME_SAMPLES / 2U)
 #define FUNDAMENTAL_COVERAGE    0.75f
-#define FUNDAMENTAL_MIN_POWER   0.0025f
+#define FUNDAMENTAL_MIN_POWER   0.0001f
+#define GRID_CANDIDATE_TOLERANCE_HZ (0.20f * APP_FFT_BIN_HZ)
+#define GRID_HARMONIC_TOLERANCE_HZ  (0.75f * APP_FFT_BIN_HZ)
+#define FREQUENCY_REFINE_ITERATIONS 2U
+#define FREQUENCY_REFINE_INITIAL_STEP (0.25f * APP_FFT_BIN_HZ)
+#define FREQUENCY_REFINE_STEP_REDUCTION 0.25f
 
 typedef struct {
     uint32_t bin;
@@ -216,6 +221,19 @@ static uint32_t find_spectral_peaks(PeakCandidate *peaks,
     uint32_t bin;
     float threshold;
 
+    /*
+     * Keep one guard bin outside each analysis boundary.  A tone exactly at
+     * 10 kHz lies at bin 20.48, so starting at ceil(20.48) would discard the
+     * stronger bin 20 and force the sub-bin interpolation against its clamp.
+     */
+    if (minimum_bin > 1U) {
+        minimum_bin--;
+    }
+    if (maximum_bin < FFT_HALF_SIZE - 1U) {
+        maximum_bin++;
+    }
+    maximum_power_bin = minimum_bin;
+
     for (bin = 0U; bin <= FFT_HALF_SIZE; bin++) {
         float real = FftReal[bin];
         float imag = FftImag[bin];
@@ -242,7 +260,7 @@ static uint32_t find_spectral_peaks(PeakCandidate *peaks,
     threshold = maximum_float(*median_noise_power * 25.0f,
                               *maximum_power * 1.0e-8f);
 
-    for (bin = minimum_bin + 1U; bin < maximum_bin; bin++) {
+    for (bin = minimum_bin; bin <= maximum_bin; bin++) {
         if (SpectrumPower[bin] >= threshold &&
             SpectrumPower[bin] > SpectrumPower[bin - 1U] &&
             SpectrumPower[bin] >= SpectrumPower[bin + 1U]) {
@@ -281,9 +299,14 @@ static uint32_t find_spectral_peaks(PeakCandidate *peaks,
     return peak_count;
 }
 
-static float choose_fundamental(const PeakCandidate *peaks,
-                                uint32_t peak_count,
-                                float maximum_power)
+static float peak_amplitude_estimate(const PeakCandidate *peak)
+{
+    return 2.0f * sqrtf(peak->power) / WindowSum;
+}
+
+static float choose_continuous_fundamental(const PeakCandidate *peaks,
+                                           uint32_t peak_count,
+                                           float maximum_power)
 {
     float total_power = 0.0f;
     float selected_frequency = 0.0f;
@@ -383,6 +406,104 @@ static float choose_fundamental(const PeakCandidate *peaks,
     return selected_frequency;
 }
 
+static int choose_grid_fundamental(const PeakCandidate *peaks,
+                                   uint32_t peak_count,
+                                   float *selected_frequency)
+{
+    uint32_t best_match_count = 0U;
+    float best_matched_power = 0.0f;
+    float best_frequency = 0.0f;
+    uint32_t candidate_index;
+
+    for (candidate_index = 0U;
+         candidate_index < peak_count;
+         candidate_index++) {
+        float candidate_frequency =
+            peaks[candidate_index].refined_bin * APP_FFT_BIN_HZ;
+        float grid_frequency =
+            floorf(candidate_frequency / APP_FUNDAMENTAL_GRID_HZ +
+                   0.5f) * APP_FUNDAMENTAL_GRID_HZ;
+        float matched_power = 0.0f;
+        float weighted_frequency = 0.0f;
+        float weight_sum = 0.0f;
+        uint32_t matched_count = 0U;
+        uint32_t peak_index;
+
+        if (grid_frequency < APP_ANALYSIS_MIN_HZ ||
+            grid_frequency > APP_FUNDAMENTAL_MAX_HZ ||
+            fabsf(candidate_frequency - grid_frequency) >
+                GRID_CANDIDATE_TOLERANCE_HZ ||
+            peak_amplitude_estimate(&peaks[candidate_index]) <
+                APP_FUNDAMENTAL_CANDIDATE_MIN_PEAK_V) {
+            continue;
+        }
+
+        for (peak_index = 0U;
+             peak_index < peak_count;
+             peak_index++) {
+            float peak_frequency =
+                peaks[peak_index].refined_bin * APP_FFT_BIN_HZ;
+            float ratio = peak_frequency / candidate_frequency;
+            uint32_t harmonic =
+                (uint32_t)floorf(ratio + 0.5f);
+            float expected_frequency =
+                candidate_frequency * (float)harmonic;
+
+            if (harmonic >= 1U &&
+                harmonic <= APP_MAX_COMPONENTS &&
+                expected_frequency <= APP_ANALYSIS_MAX_HZ +
+                                      GRID_HARMONIC_TOLERANCE_HZ &&
+                fabsf(peak_frequency - expected_frequency) <=
+                    GRID_HARMONIC_TOLERANCE_HZ &&
+                peak_amplitude_estimate(&peaks[peak_index]) >=
+                    APP_COMPONENT_MIN_PEAK_V) {
+                matched_count++;
+                matched_power += peaks[peak_index].power;
+                weighted_frequency +=
+                    (peak_frequency / (float)harmonic) *
+                    peaks[peak_index].power;
+                weight_sum += peaks[peak_index].power;
+            }
+        }
+
+        if (matched_count == 0U || weight_sum <= 0.0f) {
+            continue;
+        }
+
+        if (matched_count > best_match_count ||
+            (matched_count == best_match_count &&
+             matched_power > best_matched_power)) {
+            best_match_count = matched_count;
+            best_matched_power = matched_power;
+            best_frequency = weighted_frequency / weight_sum;
+        }
+    }
+
+    if (best_match_count == 0U) {
+        return -1;
+    }
+
+    *selected_frequency = best_frequency;
+    return 0;
+}
+
+static float choose_fundamental(const PeakCandidate *peaks,
+                                uint32_t peak_count,
+                                float maximum_power)
+{
+    float selected_frequency;
+
+    if (choose_grid_fundamental(peaks,
+                                peak_count,
+                                &selected_frequency) == 0) {
+        return selected_frequency;
+    }
+
+    return choose_continuous_fundamental(peaks,
+                                         peak_count,
+                                         maximum_power);
+}
+
 static int solve_three_by_three(float matrix[3][4], float solution[3])
 {
     uint32_t column;
@@ -445,7 +566,8 @@ static int solve_three_by_three(float matrix[3][4], float solution[3])
 
 static int fit_tone(float frequency_hz,
                     float *amplitude_peak,
-                    float *phase_rad)
+                    float *phase_rad,
+                    float *weighted_residual)
 {
     float angle_step = TWO_PI_F * frequency_hz / APP_SAMPLE_RATE_HZ;
     float step_cos = cosf(angle_step);
@@ -466,16 +588,25 @@ static int fit_tone(float frequency_hz,
 
     for (i = 0U; i < APP_FRAME_SAMPLES; i++) {
         float y = TimeSignal[i];
+        float weight = Window[i];
+        float weighted_cosine = weight * cosine;
+        float weighted_sine = weight * sine;
+        float weighted_y = weight * y;
         float next_cosine;
 
-        sum_y += y;
-        sum_c += cosine;
-        sum_s += sine;
-        sum_cc += cosine * cosine;
-        sum_ss += sine * sine;
-        sum_cs += cosine * sine;
-        sum_yc += y * cosine;
-        sum_ys += y * sine;
+        /*
+         * Match the amplitude/phase fit to the Hann-windowed detector.
+         * With only about 20 cycles at 10 kHz, an unweighted finite record
+         * projects a large fundamental into otherwise absent harmonics.
+         */
+        sum_y += weighted_y;
+        sum_c += weighted_cosine;
+        sum_s += weighted_sine;
+        sum_cc += weighted_cosine * cosine;
+        sum_ss += weighted_sine * sine;
+        sum_cs += weighted_cosine * sine;
+        sum_yc += weighted_y * cosine;
+        sum_ys += weighted_y * sine;
 
         next_cosine = cosine * step_cos - sine * step_sin;
         sine = cosine * step_sin + sine * step_cos;
@@ -489,7 +620,7 @@ static int fit_tone(float frequency_hz,
         }
     }
 
-    matrix[0][0] = (float)APP_FRAME_SAMPLES;
+    matrix[0][0] = WindowSum;
     matrix[0][1] = sum_c;
     matrix[0][2] = sum_s;
     matrix[0][3] = sum_y;
@@ -510,7 +641,108 @@ static int fit_tone(float frequency_hz,
         sqrtf(solution[1] * solution[1] +
               solution[2] * solution[2]);
     *phase_rad = atan2f(-solution[2], solution[1]);
+
+    if (weighted_residual != NULL) {
+        float cosine_component = solution[1];
+        float sine_component = solution[2];
+        float cosine_residual = 1.0f;
+        float sine_residual = 0.0f;
+        float residual_sum = 0.0f;
+
+        for (i = 0U; i < APP_FRAME_SAMPLES; i++) {
+            float estimate =
+                solution[0] +
+                cosine_component * cosine_residual +
+                sine_component * sine_residual;
+            float error = TimeSignal[i] - estimate;
+            float next_cosine;
+
+            residual_sum += Window[i] * error * error;
+            next_cosine =
+                cosine_residual * step_cos -
+                sine_residual * step_sin;
+            sine_residual =
+                cosine_residual * step_sin +
+                sine_residual * step_cos;
+            cosine_residual = next_cosine;
+
+            if ((i & 1023U) == 1023U) {
+                float norm =
+                    1.0f /
+                    sqrtf(cosine_residual * cosine_residual +
+                          sine_residual * sine_residual);
+                cosine_residual *= norm;
+                sine_residual *= norm;
+            }
+        }
+        *weighted_residual = residual_sum;
+    }
     return 0;
+}
+
+static float refine_fundamental_frequency(float initial_frequency_hz)
+{
+    float center_frequency = initial_frequency_hz;
+    float step_hz = FREQUENCY_REFINE_INITIAL_STEP;
+    uint32_t iteration;
+
+    for (iteration = 0U;
+         iteration < FREQUENCY_REFINE_ITERATIONS;
+         iteration++) {
+        float amplitude;
+        float phase;
+        float left_error;
+        float center_error;
+        float right_error;
+        float curvature;
+        float offset_hz;
+
+        if (fit_tone(center_frequency - step_hz,
+                     &amplitude, &phase, &left_error) != 0 ||
+            fit_tone(center_frequency,
+                     &amplitude, &phase, &center_error) != 0 ||
+            fit_tone(center_frequency + step_hz,
+                     &amplitude, &phase, &right_error) != 0) {
+            break;
+        }
+
+        curvature = left_error - 2.0f * center_error + right_error;
+        if (!isfinite(curvature) || curvature <= 1.0e-20f) {
+            break;
+        }
+
+        offset_hz =
+            0.5f * (left_error - right_error) / curvature * step_hz;
+        center_frequency += clamp_float(offset_hz, -step_hz, step_hz);
+        step_hz *= FREQUENCY_REFINE_STEP_REDUCTION;
+    }
+
+    return center_frequency;
+}
+
+static void retain_strongest_signal_components(MeasurementResult *result)
+{
+    while (result->component_count > APP_MAX_SIGNAL_COMPONENTS) {
+        uint32_t weakest = 1U;
+        uint32_t component_index;
+
+        for (component_index = 2U;
+             component_index < result->component_count;
+             component_index++) {
+            if (result->components[component_index].amplitude_peak_v <
+                result->components[weakest].amplitude_peak_v) {
+                weakest = component_index;
+            }
+        }
+
+        for (component_index = weakest;
+             component_index + 1U < result->component_count;
+             component_index++) {
+            result->components[component_index] =
+                result->components[component_index + 1U];
+        }
+        result->component_count--;
+    }
 }
 
 static void build_reconstructed_waveform(MeasurementResult *result)
@@ -582,6 +814,8 @@ int signal_analyze(const uint16_t *adc_codes,
     float maximum_power;
     float median_noise_power;
     float fundamental_peak;
+    float fundamental_amplitude;
+    float fundamental_phase;
     float component_limit;
     float sum;
     float sum_square;
@@ -669,11 +903,15 @@ int signal_analyze(const uint16_t *adc_codes,
         return 0;
     }
 
-    result->fundamental_hz =
-        choose_fundamental(peaks, peak_count, maximum_power);
+    result->fundamental_hz = refine_fundamental_frequency(
+        choose_fundamental(peaks, peak_count, maximum_power));
 
-    if (result->fundamental_hz < APP_ANALYSIS_MIN_HZ ||
-        result->fundamental_hz > APP_ANALYSIS_MAX_HZ) {
+    if (result->fundamental_hz <
+            APP_ANALYSIS_MIN_HZ -
+            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ ||
+        result->fundamental_hz >
+            APP_FUNDAMENTAL_MAX_HZ +
+            APP_FUNDAMENTAL_BOUNDARY_TOLERANCE_HZ) {
         result->flags |= MEASUREMENT_FLAG_ANALYSIS_ERROR;
         return -1;
     }
@@ -683,23 +921,21 @@ int signal_analyze(const uint16_t *adc_codes,
      * based on its calibrated input amplitude.
      */
     {
-        float amplitude;
-        float phase;
-
         if (fit_tone(result->fundamental_hz,
-                     &amplitude,
-                     &phase) != 0) {
+                     &fundamental_amplitude,
+                     &fundamental_phase,
+                     NULL) != 0) {
             result->flags |= MEASUREMENT_FLAG_ANALYSIS_ERROR;
             return -1;
         }
 
-        amplitude *=
+        fundamental_amplitude *=
             calibration_amplitude_correction(
                 calibration,
                 result->fundamental_hz);
         component_limit =
             maximum_float(APP_COMPONENT_MIN_PEAK_V,
-                          amplitude *
+                          fundamental_amplitude *
                           APP_COMPONENT_RELATIVE_LIMIT);
     }
 
@@ -715,14 +951,23 @@ int signal_analyze(const uint16_t *adc_codes,
             break;
         }
 
-        if (fit_tone(frequency, &amplitude, &phase) != 0) {
-            result->flags |= MEASUREMENT_FLAG_ANALYSIS_ERROR;
-            return -1;
+        if (i == 1U) {
+            amplitude = fundamental_amplitude;
+            phase = fundamental_phase;
         }
+        else {
+            if (fit_tone(frequency,
+                         &amplitude,
+                         &phase,
+                         NULL) != 0) {
+                result->flags |= MEASUREMENT_FLAG_ANALYSIS_ERROR;
+                return -1;
+            }
 
-        amplitude *=
-            calibration_amplitude_correction(calibration,
-                                             frequency);
+            amplitude *=
+                calibration_amplitude_correction(calibration,
+                                                 frequency);
+        }
 
         if (i == 1U || amplitude >= component_limit) {
             SignalComponent *component =
@@ -733,11 +978,15 @@ int signal_analyze(const uint16_t *adc_codes,
             component->amplitude_peak_v = amplitude;
             component->phase_rad = phase;
             result->component_count++;
-            result->rms_ac_volts +=
-                0.5f * amplitude * amplitude;
         }
     }
 
+    retain_strongest_signal_components(result);
+    for (i = 0U; i < result->component_count; i++) {
+        float amplitude = result->components[i].amplitude_peak_v;
+
+        result->rms_ac_volts += 0.5f * amplitude * amplitude;
+    }
     result->rms_ac_volts = sqrtf(result->rms_ac_volts);
     result->rms_total_volts =
         sqrtf(result->rms_ac_volts * result->rms_ac_volts +
