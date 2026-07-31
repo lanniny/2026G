@@ -36,8 +36,8 @@ int main(void)
 
     status = display_init();
     if (status != XST_SUCCESS) {
-        xil_printf("WARNING: HMI UART1 is absent from the active XSA; "
-                   "USB UART0 output remains enabled\r\n");
+        xil_printf("WARNING: HMI UART1 initialization/transmit timed out; "
+                   "measurement and USB UART0 output remain enabled\r\n");
     }
     else {
         xil_printf("HMI UART1 initialized: 115200 8N1, "

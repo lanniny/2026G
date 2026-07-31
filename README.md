@@ -1,6 +1,6 @@
 # 2026G
 
-基于 Zynq-7020 和 LTC2208 16 位高速 ADC 的周期信号测量与谐波分析工程。当前 `v1.0` 已完成 PL 采集链、PS7 平台、Vitis 应用、JTAG 下载和 SD 卡固化，并由实机信号测试确认原 12 位采集下的小幅谐波误判问题已基本解决。
+基于 Zynq-7020 和 LTC2208 16 位高速 ADC 的周期信号测量与谐波分析工程。当前 `v1.0.1` 已完成 PL 采集链、PS7 平台、Vitis 应用、JTAG 下载和 SD 卡固化，并加入针对 UART1 冷启动竞态的上电等待及有界超时；用户使用同哈希 SD 镜像完成冷启动实测，屏显恢复正常。
 
 ## 硬件与采样参数
 
@@ -35,17 +35,18 @@
 - `adctestvitis/adctestps/tests/`：主机端信号分析回归测试
 - `adctestvitis/refresh_dual_uart_platform.py`：Vitis 平台刷新脚本
 - `run_dual_uart_target.tcl`：JTAG 下载并运行应用
-- `release/v1.0/`：可直接使用的 SD/JTAG 发布产物
+- `run_xsdb.ps1`：带完整 Vivado 运行环境的 XSDB 启动器
+- `release/v1.0.1/`：可直接使用的 SD/JTAG 发布产物
 
 ## SD 卡启动
 
-最直接的用法是将 `release/v1.0/BOOT.BIN` 放到 FAT32 SD 卡根目录，板卡切换到 SD 启动模式后重新上电。
+最直接的用法是将 `release/v1.0.1/BOOT.BIN` 放到 FAT32 SD 卡根目录，板卡切换到 SD 启动模式后重新上电。
 
 Windows 下也可以使用带防误写检查的脚本。第一次命令只预检目标，第二次才写入：
 
 ```powershell
-.\release\v1.0\write_sd.ps1 -DriveLetter K -ExpectedDiskIndex 2
-.\release\v1.0\write_sd.ps1 -DriveLetter K -ExpectedDiskIndex 2 -ConfirmWrite
+.\release\v1.0.1\write_sd.ps1 -DriveLetter K -ExpectedDiskIndex 2
+.\release\v1.0.1\write_sd.ps1 -DriveLetter K -ExpectedDiskIndex 2 -ConfirmWrite
 ```
 
 请按本机实际盘符和物理磁盘号替换示例值。脚本只接受 `Removable` 类型的 FAT/FAT32 分区，并在写入后回读 SHA-256。
@@ -53,7 +54,7 @@ Windows 下也可以使用带防误写检查的脚本。第一次命令只预检
 重新生成镜像：
 
 ```powershell
-.\release\v1.0\build_boot.ps1 -Force
+.\release\v1.0.1\build_boot.ps1 -Force
 ```
 
 `BOOT.BIN` 的分区顺序固定为 quiet FSBL、PL bitstream、PS 应用 ELF。
@@ -63,20 +64,20 @@ Windows 下也可以使用带防误写检查的脚本。第一次命令只预检
 ```powershell
 F:\AMDDesignTools\2025.2\Vivado\bin\vivado.bat -mode batch -source .\adc_easy_test\build_4msps.tcl
 python .\adctestvitis\refresh_dual_uart_platform.py
+F:\AMDDesignTools\2025.2\Vivado\bin\empyro.bat build_app -s .\adctestvitis\adctestps\src -b .\adctestvitis\adctestps\build
 cmd /c .\adctestvitis\adctestps\tests\run_host_tests.bat
 cmd /c .\adc_easy_test\sim_4msps\run_sim.bat
-F:\AMDDesignTools\2025.2\Vivado\bin\xsdb.bat .\run_dual_uart_target.tcl
+.\run_xsdb.ps1 -Script .\run_dual_uart_target.tcl
 ```
 
-JTAG 命令要求板卡、LTC2208 和调试器均已上电连接。当前发布的详细验证证据见 `release/v1.0/VERIFICATION.md`。
+JTAG 命令要求板卡、LTC2208 和调试器均已上电连接。当前发布的详细验证证据见 `release/v1.0.1/VERIFICATION.md`。
 
-## v1.0 校验值
+## v1.0.1 校验值
 
-`release/v1.0/BOOT.BIN`：
+`release/v1.0.1/BOOT.BIN`：
 
 ```text
-62B1433683941D22092E8EEF03FF1BCE179CC4B582CE81371936C0C16181FC45
+478E8A1A5B8FC5ED498E3DD5B184CA36B03ED9C9C00A59EC98D47758A26A37AB
 ```
 
-完整校验表见 `release/v1.0/SHA256SUMS.txt`。
-
+完整校验表见 `release/v1.0.1/SHA256SUMS.txt`。

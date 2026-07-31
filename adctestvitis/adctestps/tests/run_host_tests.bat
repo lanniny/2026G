@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0"
 
 set "SRC=..\src"
 set "PL_SAMPLES=..\..\..\adc_easy_test\sim_4msps\pl_samples.txt"

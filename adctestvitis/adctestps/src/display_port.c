@@ -35,6 +35,10 @@
 #define HMI_UART1_BASEADDR       0xE0001000U
 #define HMI_UART1_INPUT_CLOCK_HZ 100000000U
 #define HMI_UART1_REF_CLOCK_ID   24U
+#define HMI_UART_POLL_INTERVAL_US 10U
+#define HMI_UART_FIFO_TIMEOUT_US  20000U
+#define HMI_UART_DONE_TIMEOUT_US  250000U
+#define HMI_POWER_ON_DELAY_US      2000000U
 
 typedef struct {
     XUartPs uart;
@@ -124,32 +128,82 @@ static int display_uart_init(void)
     return XST_SUCCESS;
 }
 
-static void hmi_write_byte(uint8_t value)
+static int display_wait_status(uint32_t required_set,
+                               uint32_t required_clear,
+                               uint32_t timeout_us)
 {
-    while (XUartPs_IsTransmitFull(Display.uart.Config.BaseAddress)) {
-        /* A 115200-baud FIFO slot becomes available in under 90 us. */
+    uint32_t elapsed_us;
+
+    for (elapsed_us = 0U;
+         elapsed_us < timeout_us;
+         elapsed_us += HMI_UART_POLL_INTERVAL_US) {
+        uint32_t status =
+            XUartPs_ReadReg(Display.uart.Config.BaseAddress,
+                            XUARTPS_SR_OFFSET);
+
+        if ((status & required_set) == required_set &&
+            (status & required_clear) == 0U) {
+            return XST_SUCCESS;
+        }
+        usleep(HMI_UART_POLL_INTERVAL_US);
     }
+
+    Display.initialized = 0U;
+    return XST_FAILURE;
+}
+
+static int display_wait_tx_done(uint32_t timeout_us)
+{
+    return display_wait_status(XUARTPS_SR_TXEMPTY,
+                               XUARTPS_SR_TACTIVE,
+                               timeout_us);
+}
+
+static int hmi_write_byte(uint8_t value)
+{
+    int status;
+
+    if (!Display.initialized) {
+        return XST_FAILURE;
+    }
+
+    status = display_wait_status(0U,
+                                 XUARTPS_SR_TXFULL,
+                                 HMI_UART_FIFO_TIMEOUT_US);
+    if (status != XST_SUCCESS) {
+        return status;
+    }
+
     XUartPs_WriteReg(Display.uart.Config.BaseAddress,
                      XUARTPS_FIFO_OFFSET,
                      value);
     Display.transmitted_bytes++;
+    return XST_SUCCESS;
 }
 
-static void hmi_write(const char *text)
+static int hmi_write(const char *text)
 {
     const uint8_t terminator[3] = {0xFFU, 0xFFU, 0xFFU};
     size_t index;
+    int status;
 
     if (!Display.initialized || text == NULL) {
-        return;
+        return XST_FAILURE;
     }
 
     for (index = 0U; text[index] != '\0'; index++) {
-        hmi_write_byte((uint8_t)text[index]);
+        status = hmi_write_byte((uint8_t)text[index]);
+        if (status != XST_SUCCESS) {
+            return status;
+        }
     }
     for (index = 0U; index < sizeof(terminator); index++) {
-        hmi_write_byte(terminator[index]);
+        status = hmi_write_byte(terminator[index]);
+        if (status != XST_SUCCESS) {
+            return status;
+        }
     }
+    return XST_SUCCESS;
 }
 
 static void hmi_command(const char *format, ...)
@@ -161,7 +215,7 @@ static void hmi_command(const char *format, ...)
     (void)vsnprintf(command, sizeof(command), format, arguments);
     va_end(arguments);
     command[sizeof(command) - 1U] = '\0';
-    hmi_write(command);
+    (void)hmi_write(command);
 }
 
 static int32_t round_to_i32(float value)
@@ -662,15 +716,17 @@ int display_init(void)
     Display.redraw_required = 1U;
 
     /*
-     * Be tolerant of either HMI state:
-     *   1. a freshly powered HMI still listening at 9600;
-     *   2. page0 has already switched the HMI to 115200.
-     * A command sent at the wrong baud is ignored, then both sides are
-     * explicitly placed at 115200 before normal commands are issued.
+     * During SD cold boot the Zynq application starts while the HMI is still
+     * loading its project.  JTAG starts much later and therefore hid this
+     * race.  The first command handles the HMI's 9600-baud boot state; after
+     * switching locally, the second handles a page0 already at 115200.
      */
-    usleep(300000U);
-    hmi_write("baud=115200");
-    XUartPs_WaitTransmitDone(Display.uart.Config.BaseAddress);
+    usleep(HMI_POWER_ON_DELAY_US);
+    status = hmi_write("baud=115200");
+    if (status != XST_SUCCESS ||
+        display_wait_tx_done(HMI_UART_DONE_TIMEOUT_US) != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
     usleep(50000U);
     status = XUartPs_SetBaudRate(&Display.uart,
                                  DISPLAY_UART_BAUD_RATE);
@@ -679,14 +735,18 @@ int display_init(void)
         return status;
     }
 
-    hmi_write("baud=115200");
-    hmi_write("bkcmd=0");
-    hmi_write("sendxy=1");
-    hmi_write("page 0");
+    if (hmi_write("baud=115200") != XST_SUCCESS ||
+        hmi_write("bkcmd=0") != XST_SUCCESS ||
+        hmi_write("sendxy=1") != XST_SUCCESS ||
+        hmi_write("page 0") != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
     usleep(100000U);
     hmi_fill(626, 390, 151, 25, HMI_COLOR_GREEN);
-    hmi_write("sendme");
-    XUartPs_WaitTransmitDone(Display.uart.Config.BaseAddress);
+    if (!Display.initialized || hmi_write("sendme") != XST_SUCCESS ||
+        display_wait_tx_done(HMI_UART_DONE_TIMEOUT_US) != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
     usleep(100000U);
     display_service();
     return XST_SUCCESS;

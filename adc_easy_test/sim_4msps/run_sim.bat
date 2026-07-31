@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0"
 
 set "VIVADO_ROOT=F:\AMDDesignTools\2025.2\Vivado"
 set "PRODUCT_ROOT=F:\AMDDesignTools\2025.2"
