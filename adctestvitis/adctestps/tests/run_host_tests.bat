@@ -33,4 +33,21 @@ if errorlevel 1 exit /b 1
 host_interference_test.exe
 if errorlevel 1 exit /b 1
 
+"%GCC%" -std=c11 -O2 -Wall -Wextra -Werror -pedantic -I "%SRC%" ^
+  host_display_waveform_test.c "%SRC%\display_waveform.c" ^
+  -lm -o host_display_waveform_test.exe
+if errorlevel 1 exit /b 1
+
+host_display_waveform_test.exe
+if errorlevel 1 exit /b 1
+
+"%GCC%" -std=c11 -O2 -Wall -Wextra -Werror -pedantic ^
+  -I "%~dp0fake_xilinx" -I "%SRC%" ^
+  host_display_port_test.c "%SRC%\display_port.c" ^
+  "%SRC%\display_waveform.c" -lm -o host_display_port_test.exe
+if errorlevel 1 exit /b 1
+
+host_display_port_test.exe
+if errorlevel 1 exit /b 1
+
 endlocal

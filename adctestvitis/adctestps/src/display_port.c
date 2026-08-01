@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "app_config.h"
+#include "display_waveform.h"
 #include "sleep.h"
 #include "xparameters.h"
 #include "xuartps.h"
@@ -20,13 +21,13 @@
 #define HMI_PLOT_WIDTH          506
 #define HMI_PLOT_HEIGHT         265
 #define HMI_PLOT_BOTTOM         (HMI_PLOT_TOP + HMI_PLOT_HEIGHT - 1)
-#define HMI_WAVE_SEGMENTS       48U
 #define HMI_SCREEN_MAX_HZ       510000.0f
+#define HMI_WAVEFORM_OBJECT_ID  4U
+#define HMI_WAVEFORM_CHANNEL    0U
 
 #define HMI_COLOR_BLACK         0U
 #define HMI_COLOR_BLUE          31U
 #define HMI_COLOR_GREEN         2016U
-#define HMI_COLOR_CYAN          2047U
 #define HMI_COLOR_ORANGE        64512U
 #define HMI_COLOR_WHITE         65535U
 #define HMI_REFRESH_TIME_FRAMES 20U
@@ -38,7 +39,21 @@
 #define HMI_UART_POLL_INTERVAL_US 10U
 #define HMI_UART_FIFO_TIMEOUT_US  20000U
 #define HMI_UART_DONE_TIMEOUT_US  250000U
+#define HMI_WAVE_TIMEOUT_US        300000U
+#define HMI_PAGE_TIMEOUT_US        250000U
 #define HMI_POWER_ON_DELAY_US      2000000U
+
+#define HMI_EVENT_WAVE_READY     (1U << 0)
+#define HMI_EVENT_WAVE_FINISHED  (1U << 1)
+#define HMI_EVENT_PAGE_REPORTED  (1U << 2)
+
+typedef enum {
+    HMI_WAVE_IDLE = 0,
+    HMI_WAVE_WAIT_READY,
+    HMI_WAVE_SENDING,
+    HMI_WAVE_WAIT_FINISHED,
+    HMI_WAVE_RECOVERING
+} HmiWaveState;
 
 typedef struct {
     XUartPs uart;
@@ -47,6 +62,10 @@ typedef struct {
     uint8_t period_count;
     uint8_t hold;
     uint8_t redraw_required;
+    uint8_t protocol_events;
+    uint8_t page_query_pending;
+    uint8_t hold_state_dirty;
+    HmiWaveState wave_state;
     uint8_t rx_packet[16];
     uint32_t rx_length;
     uint32_t rx_ff_count;
@@ -159,6 +178,23 @@ static int display_wait_tx_done(uint32_t timeout_us)
                                timeout_us);
 }
 
+static int display_wait_event(uint8_t event, uint32_t timeout_us)
+{
+    uint32_t elapsed_us;
+
+    for (elapsed_us = 0U;
+         elapsed_us < timeout_us;
+         elapsed_us += HMI_UART_POLL_INTERVAL_US) {
+        display_service();
+        if ((Display.protocol_events & event) != 0U) {
+            Display.protocol_events &= (uint8_t)~event;
+            return XST_SUCCESS;
+        }
+        usleep(HMI_UART_POLL_INTERVAL_US);
+    }
+    return XST_FAILURE;
+}
+
 static int hmi_write_byte(uint8_t value)
 {
     int status;
@@ -187,7 +223,8 @@ static int hmi_write(const char *text)
     size_t index;
     int status;
 
-    if (!Display.initialized || text == NULL) {
+    if (!Display.initialized || text == NULL ||
+        Display.wave_state != HMI_WAVE_IDLE) {
         return XST_FAILURE;
     }
 
@@ -204,6 +241,92 @@ static int hmi_write(const char *text)
         }
     }
     return XST_SUCCESS;
+}
+
+static int hmi_write_bytes(const uint8_t *data, size_t length)
+{
+    size_t index;
+
+    if (!Display.initialized || data == NULL || length == 0U) {
+        return XST_FAILURE;
+    }
+    for (index = 0U; index < length; index++) {
+        if (hmi_write_byte(data[index]) != XST_SUCCESS) {
+            return XST_FAILURE;
+        }
+    }
+    return XST_SUCCESS;
+}
+
+static void reset_receive_parser(void)
+{
+    uint32_t base;
+
+    if (Display.initialized) {
+        base = Display.uart.Config.BaseAddress;
+        while (XUartPs_IsReceiveData(base)) {
+            (void)XUartPs_ReadReg(base, XUARTPS_FIFO_OFFSET);
+        }
+    }
+    Display.rx_length = 0U;
+    Display.rx_ff_count = 0U;
+    Display.protocol_events = 0U;
+}
+
+static void recover_wave_transfer(void)
+{
+    uint32_t point;
+    int status = XST_SUCCESS;
+
+    Display.wave_state = HMI_WAVE_RECOVERING;
+
+    /*
+     * The HMI may still be waiting for any number of the 506 transparent
+     * bytes.  A complete neutral payload always drains that mode; the final
+     * terminator then also closes any invalid command accumulated when the
+     * HMI had never entered transparent mode.
+     */
+    for (point = 0U;
+         point < DISPLAY_WAVEFORM_POINT_COUNT && status == XST_SUCCESS;
+         point++) {
+        status = hmi_write_byte(128U);
+    }
+    for (point = 0U; point < 3U && status == XST_SUCCESS; point++) {
+        status = hmi_write_byte(0xFFU);
+    }
+    if (status == XST_SUCCESS) {
+        status = display_wait_tx_done(HMI_UART_DONE_TIMEOUT_US);
+    }
+    if (status == XST_SUCCESS) {
+        usleep(20000U);
+    }
+
+    reset_receive_parser();
+    Display.wave_state = HMI_WAVE_IDLE;
+    Display.page_query_pending = 1U;
+    Display.redraw_required = 1U;
+    Display.refresh_divider = 0U;
+}
+
+static int confirm_current_page(void)
+{
+    if (!Display.initialized ||
+        Display.wave_state != HMI_WAVE_IDLE) {
+        return XST_FAILURE;
+    }
+
+    display_service();
+    Display.page_query_pending = 0U;
+    Display.protocol_events &= (uint8_t)~HMI_EVENT_PAGE_REPORTED;
+    if (hmi_write("sendme") != XST_SUCCESS ||
+        display_wait_event(HMI_EVENT_PAGE_REPORTED,
+                           HMI_PAGE_TIMEOUT_US) != XST_SUCCESS) {
+        Display.page_query_pending = 1U;
+        return XST_FAILURE;
+    }
+
+    /* A touch received after the query was sent requires a fresh reply. */
+    return Display.page_query_pending ? XST_FAILURE : XST_SUCCESS;
 }
 
 static void hmi_command(const char *format, ...)
@@ -477,61 +600,78 @@ static void draw_time_parameters(const MeasurementResult *result)
     }
 }
 
-static void draw_time_waveform(const MeasurementResult *result)
+static int clear_time_waveform(void)
 {
-    float minimum;
-    float maximum;
-    float span;
-    uint32_t point;
-    int previous_x = HMI_PLOT_LEFT;
-    int previous_y = HMI_PLOT_TOP + HMI_PLOT_HEIGHT / 2;
+    char command[24];
 
-    hmi_command("picq %d,%d,%d,%d,0",
-                HMI_PLOT_LEFT, HMI_PLOT_TOP,
-                HMI_PLOT_WIDTH, HMI_PLOT_HEIGHT);
+    (void)snprintf(command, sizeof(command), "cle %u,%u",
+                   HMI_WAVEFORM_OBJECT_ID,
+                   HMI_WAVEFORM_CHANNEL);
+    return hmi_write(command);
+}
+
+static int send_time_waveform(
+    const uint8_t samples[DISPLAY_WAVEFORM_POINT_COUNT])
+{
+    char command[32];
+
+    display_service();
+    if (Display.wave_state != HMI_WAVE_IDLE ||
+        Display.page_query_pending ||
+        Display.current_page != HMI_PAGE_TIME) {
+        return XST_FAILURE;
+    }
+    if (clear_time_waveform() != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
+
+    Display.protocol_events &=
+        (uint8_t)~(HMI_EVENT_WAVE_READY | HMI_EVENT_WAVE_FINISHED);
+    (void)snprintf(command, sizeof(command), "addt %u,%u,%u",
+                   HMI_WAVEFORM_OBJECT_ID,
+                   HMI_WAVEFORM_CHANNEL,
+                   DISPLAY_WAVEFORM_POINT_COUNT);
+    if (hmi_write(command) != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
+    Display.wave_state = HMI_WAVE_WAIT_READY;
+    if (display_wait_event(HMI_EVENT_WAVE_READY,
+                           HMI_WAVE_TIMEOUT_US) != XST_SUCCESS) {
+        recover_wave_transfer();
+        return XST_FAILURE;
+    }
+
+    Display.wave_state = HMI_WAVE_SENDING;
+    if (hmi_write_bytes(samples,
+                        DISPLAY_WAVEFORM_POINT_COUNT) != XST_SUCCESS ||
+        display_wait_tx_done(HMI_UART_DONE_TIMEOUT_US) != XST_SUCCESS) {
+        recover_wave_transfer();
+        return XST_FAILURE;
+    }
+
+    Display.wave_state = HMI_WAVE_WAIT_FINISHED;
+    if (display_wait_event(HMI_EVENT_WAVE_FINISHED,
+                           HMI_WAVE_TIMEOUT_US) != XST_SUCCESS) {
+        recover_wave_transfer();
+        return XST_FAILURE;
+    }
+    Display.wave_state = HMI_WAVE_IDLE;
+    return XST_SUCCESS;
+}
+
+static int draw_time_waveform(const MeasurementResult *result)
+{
+    uint8_t samples[DISPLAY_WAVEFORM_POINT_COUNT];
 
     if ((result->flags & MEASUREMENT_FLAG_NO_SIGNAL) != 0U) {
-        return;
+        return clear_time_waveform();
     }
-
-    minimum = result->waveform_one_period[0];
-    maximum = minimum;
-    for (point = 1U; point < APP_WAVEFORM_POINTS; point++) {
-        float sample = result->waveform_one_period[point];
-        if (sample < minimum) {
-            minimum = sample;
-        }
-        if (sample > maximum) {
-            maximum = sample;
-        }
+    if (!display_waveform_make(result,
+                               Display.period_count,
+                               samples)) {
+        return clear_time_waveform();
     }
-
-    span = maximum - minimum;
-    if (span < 1.0e-9f) {
-        return;
-    }
-
-    for (point = 0U; point <= HMI_WAVE_SEGMENTS; point++) {
-        uint32_t waveform_index =
-            (point * (uint32_t)Display.period_count *
-             APP_WAVEFORM_POINTS / HMI_WAVE_SEGMENTS) %
-            APP_WAVEFORM_POINTS;
-        float normalized =
-            (result->waveform_one_period[waveform_index] - minimum) /
-            span;
-        int x = HMI_PLOT_LEFT +
-            (int)(point * HMI_PLOT_WIDTH / HMI_WAVE_SEGMENTS);
-        int y = HMI_PLOT_BOTTOM -
-            10 - (int)(normalized * (float)(HMI_PLOT_HEIGHT - 20));
-
-        if (point != 0U) {
-            hmi_command("line %d,%d,%d,%d,%u",
-                        previous_x, previous_y, x, y,
-                        HMI_COLOR_CYAN);
-        }
-        previous_x = x;
-        previous_y = y;
-    }
+    return send_time_waveform(samples);
 }
 
 static void draw_component_table(const MeasurementResult *result)
@@ -661,7 +801,7 @@ static void process_touch(uint16_t x, uint16_t y, uint8_t event)
         else if (x >= 690U && x <= 783U &&
                  y >= 316U && y <= 365U) {
             Display.hold = Display.hold ? 0U : 1U;
-            draw_hold_state();
+            Display.hold_state_dirty = 1U;
             if (!Display.hold) {
                 Display.redraw_required = 1U;
                 Display.refresh_divider = 0U;
@@ -669,13 +809,19 @@ static void process_touch(uint16_t x, uint16_t y, uint8_t event)
         }
     }
 
-    /* Read back the active page after the HMI executes its button event. */
-    hmi_write("sendme");
+    /* Query only after any transparent waveform transfer has completed. */
+    Display.page_query_pending = 1U;
 }
 
 static void process_packet(const uint8_t *packet, uint32_t length)
 {
-    if (length == 6U && packet[0] == 0x67U) {
+    if (length == 1U && packet[0] == 0xFEU) {
+        Display.protocol_events |= HMI_EVENT_WAVE_READY;
+    }
+    else if (length == 1U && packet[0] == 0xFDU) {
+        Display.protocol_events |= HMI_EVENT_WAVE_FINISHED;
+    }
+    else if (length == 6U && packet[0] == 0x67U) {
         uint16_t x =
             ((uint16_t)packet[1] << 8) | (uint16_t)packet[2];
         uint16_t y =
@@ -690,6 +836,7 @@ static void process_packet(const uint8_t *packet, uint32_t length)
             }
             Display.redraw_required = 1U;
             Display.refresh_divider = 0U;
+            Display.protocol_events |= HMI_EVENT_PAGE_REPORTED;
         }
     }
     else if (length == 1U && packet[0] == 0x88U) {
@@ -743,12 +890,13 @@ int display_init(void)
     }
     usleep(100000U);
     hmi_fill(626, 390, 151, 25, HMI_COLOR_GREEN);
-    if (!Display.initialized || hmi_write("sendme") != XST_SUCCESS ||
-        display_wait_tx_done(HMI_UART_DONE_TIMEOUT_US) != XST_SUCCESS) {
+    if (!Display.initialized) {
         return XST_FAILURE;
     }
-    usleep(100000U);
-    display_service();
+    Display.page_query_pending = 1U;
+    if (confirm_current_page() != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
     return XST_SUCCESS;
 }
 
@@ -813,7 +961,16 @@ void display_publish_measurement(const MeasurementResult *result)
     }
 
     display_service();
+    if (Display.page_query_pending) {
+        if (confirm_current_page() != XST_SUCCESS) {
+            return;
+        }
+    }
     if (Display.hold && Display.current_page == HMI_PAGE_SPECTRUM) {
+        if (Display.hold_state_dirty) {
+            draw_hold_state();
+            Display.hold_state_dirty = 0U;
+        }
         return;
     }
 
@@ -833,11 +990,14 @@ void display_publish_measurement(const MeasurementResult *result)
 
     if (Display.current_page == HMI_PAGE_TIME) {
         draw_time_parameters(result);
-        draw_time_waveform(result);
+        if (draw_time_waveform(result) != XST_SUCCESS) {
+            Display.refresh_divider = 0U;
+        }
     }
     else {
         draw_component_table(result);
         draw_spectrum(result);
         draw_hold_state();
+        Display.hold_state_dirty = 0U;
     }
 }

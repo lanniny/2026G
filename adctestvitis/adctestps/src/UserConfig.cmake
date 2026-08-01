@@ -12,6 +12,7 @@ set(USER_COMPILE_SOURCES
     "signal_analysis.c"
     "app_print.c"
     "serial_link.c"
+    "display_waveform.c"
     "display_port.c"
     "platform.c"
 )
